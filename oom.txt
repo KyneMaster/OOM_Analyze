@@ -1,0 +1,97 @@
+1.Reference Types in java
+	.Strong Reference: the normal one.e.g.String s = "android";
+	.SoftReference: collected when the memory is tensive
+	.WeakReference: collected when the GC occurs
+	.Phantom Reference: used with reference queue to tell whether the object is collected.
+		
+		Public class AppSettings {
+			private Context mAppContext;
+			private static AppSettings sInstance = new AppSettings;
+			
+			//some other codes 
+			public static AppSettings getInstance(){
+				return sInstance;
+			}
+			public final void setup(Context){
+				mAppContext = context.getApplicationContext();
+			}
+		}
+
+2.Leaks caused by forgetting unregistration
+	public class MainActivity extends AppCompatActivity implements OnNetworkChangedListener{
+		
+		@Override 
+		protected void onCreate(Bundle saveInstanceState){
+			super.onCreate(saveInstanceState);
+			setContentView(R.layout.cativity_main);
+			NetworkManager.getInstance().reqisterListener(this);
+		}
+		
+		@Override
+		public void onNetworkUp(){
+		}
+		
+		@Override
+		public void noNetWorkDown(){
+		}
+		
+		//注意解决问题
+		@Override
+		protected void onDestory(){
+			super.onDestory();
+			NetworkManager.getInstance().unregisterListener(this);
+		}
+	}
+	
+3.Leaks ca  used by non_static inner class 
+
+		public class SensorListenerActivity esxtends Activity{
+			
+			@Override
+			protected void onCreate(Bundle saveInstanceState){
+				super.onCreate(saveInstanceState);
+				SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVION);
+				sensorManager.reqisterListener(new SensorListener(){
+					
+					@Override
+					public void onSensorChanged(int sensor, float[] values){
+					
+					}
+					
+					@Override
+					public void onAccuracyChanged(int sensor,int accuracy){
+					
+					}
+				},SensorManager.SENSOR_ALL);
+			}
+		}
+		
+4.Memory Leaks Scenarios
+	.Passing Activity as the Context of Singleton
+	.Use Activity.getSystemService() to obtain some sevieces.(PowerManager);
+	.Resources(closeable objects) not closed
+	.Handler cause memory leaks 
+	.Delayed tasks may cause memory leaks 
+	.and other scenarios
+
+5.Ways to resolve
+	.Remove the unecessary strong reference relationships
+	.Use WeakReference or other variants
+	
+6.Detect and Analyze
+	.StricMode
+	.Android Memory Monitors
+	.LeakCanary
+	.Heap Dump
+	.MAT
+	
+7.LeakCanart
+	.A memory leak detection library for Android and java
+	.it.s powered by Square
+	.LeakCanary will automatically show a notification when an activity memory leak is detected in your debug build.
+	
+8.OOM
+	.OOM is thrown when there is no enough space to create any objects and the heap cauld not expanded any more.
+	.OOM os a common idication of Memory Leaks 
+	.Not all the OOMs are caused by Memory Leaks 
+	.Memory Leaks could cause OOMs, but this is not inevitable.
